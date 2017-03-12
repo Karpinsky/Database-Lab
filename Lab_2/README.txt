@@ -1,0 +1,1 @@
+Creation of Database using graphic interface Management Studio.

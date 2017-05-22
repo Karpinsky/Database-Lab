@@ -162,7 +162,11 @@ ON [LP_one].ram = [LP_two].ram AND [LP_one].hd = [LP_two].hd AND [LP_one].code !
 	Знайдіть виробників, що випускають ПК, але не ноутбуки (використати ключове слово ANY). 
 	Виведіть: maker.
 */
-
+SELECT [PR].[maker]
+FROM [Product] AS [PR]
+WHERE NOT 'Laptop' = ANY(SELECT [Product].[type] FROM [Product] WHERE [Product].[maker] = [PR].[maker])
+	AND 'PC' = ANY(SELECT [Product].[type] FROM [Product] WHERE [Product].[maker] = [PR].[maker])
+GROUP BY [PR].[maker];
 
 /*
 	5) БД «Комп. фірма». 

@@ -194,14 +194,20 @@ ON [Product].[model] = [PC].[model] AND [PC].[ram] = @PCMinRam AND [Product].[ma
 	Вивести дані для таблиці Trip з об’єднаними значеннями двох стовпців: town_from та town_to, 
 	з додатковими коментарями типу: 'from Rostov to Paris'.
 */
-
+SELECT CONCAT([town_from], ' ', [town_to]) AS [trip_road], CONCAT('from ', [town_from], ' to ', [town_to]) AS [comment]
+FROM [Trip];
 
 /*
 	7) БД «Комп. фірма». 
 	Знайти моделі та ціни ПК, вартість яких перевищує мінімальну вартість ноутбуків. 
 	Вивести: model, price.
 */
+DECLARE @LaptopMinValue INT;
+SELECT @LaptopMinValue = MIN([price]) FROM [Laptop];
 
+SELECT [model], [price]
+FROM [PC]
+WHERE [price] > @LaptopMinValue;
 
 /*
 	8) БД «Комп. фірма». 
@@ -209,6 +215,12 @@ ON [Product].[model] = [PC].[model] AND [PC].[ram] = @PCMinRam AND [Product].[ma
 	Вивести: maker, мінімальна швидкість. 
 	(Підказка: використовувати підзапити в якості обчислювальних стовпців)
 */
+SELECT [prt].[maker], MIN([pc].[speed]) AS min_speed
+FROM [PC] AS [pc]
+JOIN [Product] AS [prt]
+ON [pc].[model] = [prt].[model]
+GROUP BY [maker]
+HAVING MIN([pc].[speed]) >= 500;
 
 
 /*
@@ -225,7 +237,26 @@ ON [Product].[model] = [PC].[model] AND [PC].[ram] = @PCMinRam AND [Product].[ma
 	для пунктів, що не мають у певні дні видачі грошей – необхідно обробляти NULL - 
 	значення за допомогою перевірки умови IS [NOT] NULL)
 */
-
+SELECT
+	CASE
+		WHEN [any_outcome].[point] IS NULL OR [day_outcome].[point] IS NULL
+			THEN -1
+		ELSE [any_outcome].[point] 
+	END AS [point], 
+	[any_outcome].[date] AS [date],
+	CASE 
+		WHEN [day_outcome].[out] > [any_outcome].[out]
+			THEN 'once a day'
+		WHEN [day_outcome].[out] < [any_outcome].[out]
+			THEN 'more than once a day'
+		WHEN [day_outcome].[out] IS NULL OR [any_outcome].[out] IS NULL
+			THEN 'No match'
+		ELSE 'both'
+	END AS [text]
+FROM [Outcome_o] AS [day_outcome]
+FULL OUTER JOIN (SELECT [point], [date], SUM([out]) AS [out] FROM [Outcome] GROUP BY [point], [date]) AS [any_outcome]
+ON [any_outcome].[date] = [day_outcome].[date] AND [any_outcome].[point] = [day_outcome].[point]
+ORDER BY [date] DESC;
 
 /*
 	10) БД «Комп. фірма».
@@ -233,4 +264,11 @@ ON [Product].[model] = [PC].[model] AND [PC].[ram] = @PCMinRam AND [Product].[ma
 	Вивести: type, model, середня ціна. 
 	(Підказка: використовувати оператор UNION)
 */
-
+SELECT 'PC' AS [type], AVG([price]) AS [avg_price]
+FROM [PC]
+UNION
+SELECT 'Laptop' AS [type], AVG([price]) AS [avg_price]
+FROM [Laptop]
+UNION
+SELECT 'Printer' AS [type], AVG([price]) AS [avg_price]
+FROM [Printer];

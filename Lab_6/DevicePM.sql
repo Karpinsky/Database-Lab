@@ -21,12 +21,13 @@ CREATE TABLE Dates(
     lab_id         bigint    NOT NULL,
     employee_id    bigint    NOT NULL,
     return_date    date      NOT NULL,
-    get_date       date      NOT NULL
-                   CHECK (get_date > return_date),
+    get_date       date      NOT NULL,
     CONSTRAINT PK8 PRIMARY KEY NONCLUSTERED (id, lab_id, employee_id)
 )
 go
 
+ALTER TABLE Dates
+ADD CHECK (get_date < return_date);
 
 
 IF OBJECT_ID('Dates') IS NOT NULL
@@ -43,8 +44,7 @@ CREATE TABLE Device(
     serial_number       bigint             IDENTITY(1,1),
     name                nvarchar(50)       NOT NULL,
     maker               nvarchar(50)       NOT NULL,
-    inventory_number    nchar(18)          NOT NULL
-                        CHECK (inventory_number LIKE 00inventory_number),
+    inventory_number    nchar(18)          NOT NULL,
     image_binary        varbinary(2000)    NOT NULL,
     image_name          nvarchar(50)       NOT NULL,
     parameters          nvarchar(255)      NOT NULL,
@@ -54,6 +54,8 @@ CREATE TABLE Device(
 )
 go
 
+ALTER TABLE Device
+ADD CHECK (inventory_number LIKE '00%');
 
 
 IF OBJECT_ID('Device') IS NOT NULL
